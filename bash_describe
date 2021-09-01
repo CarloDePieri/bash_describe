@@ -26,3 +26,48 @@ die() {
   msg "$msg"
   exit "$code"
 }
+
+#
+# TEST RUNNER
+#
+source_all_in_folder() {
+  #
+  # source all test_*.sh files found in the given path
+
+  local target_folder="$1"
+
+  check_for_tests=$(ls ${target_folder}/test_*.sh >/dev/null 2>&1)
+  if [[ "$?" == 0 ]]; then
+    for test_file in ${target_folder}/test_*.sh; do
+      source "$test_file"
+    done
+  fi
+}
+
+collect_and_run_tests() {
+  #
+  # source all test_*.sh files found in the given path/s (pwd by default)
+  # can even source single file if provided (they don't have to respect the test_*.sh name format)
+
+  if [[ "$#" -eq 0 ]]; then
+    # Source all test_*.sh files in `pwd`
+    source_all_in_folder "$(pwd)"
+
+  else
+    # Parse all arguments, if a file source it, if a folder, source all test_*.sh files there
+    for arg in "$@"; do
+      if [[ -d "$arg" ]]; then
+        source_all_in_folder "$arg"
+      elif [[ -f "$arg" ]]; then
+        source "$arg"
+      else
+        die "${RED}ERR: \`$arg\` is not a valid folder or file.${NOFORMAT}"
+      fi
+    done
+
+  fi
+}
+
+
+setup_colors
+collect_and_run_tests "$@"
