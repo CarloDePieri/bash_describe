@@ -37,6 +37,20 @@ test_name=""
 #
 # TEST DEFINITIONS
 #
+# This is the accepted format for a test assertion:
+#
+# it "should work"
+#   assert() { true; }
+# it
+#
+is_assert_function_set() {
+  #
+  # return 0 if the assert function exists
+
+  declare -F "assert" > /dev/null
+  return $?
+}
+
 it() {
   #
   # set the name for the next test
@@ -45,8 +59,13 @@ it() {
   if [[ "$test_name" != "" ]]; then
     die "${RED}ERR: \`it\` called, but a previous \`ti\` seems missing (probably from the test '$test_name')${NOFORMAT}".
 
+  elif is_assert_function_set; then
+    msg="${RED}ERR: \`it\` called, but a function called assert was already defined: assert functions"
+    msg="$msg should only be defined inside it/ti blocks.${NOFORMAT}"
+    die "$msg"
+
   else
-    test_name="it $@"
+    test_name="it ${1-"should work"}"
 
   fi
 }
@@ -61,11 +80,15 @@ ti() {
   if [[ -z ${test_name+x} ]] || [[ "$test_name" == "" ]]; then
     die "${RED}ERR: \`ti\` called without a matching \`it\`${NOFORMAT}"
 
+  elif ! is_assert_function_set; then
+    die "${RED}ERR: no assert function was found. Define one in the it/ti block of $test_name.${NOFORMAT}"
+
   else
     echo "- $test_name"
 
-    # reset test state
+    # reset test global state
     test_name=""
+    unset assert
 
   fi
 }
