@@ -28,7 +28,50 @@ die() {
 }
 
 #
-# TEST RUNNER
+# GLOBAL STATE
+#
+
+# This will contain the next test name
+test_name=""
+
+#
+# TEST DEFINITIONS
+#
+it() {
+  #
+  # set the name for the next test
+
+  # Check if the it/ti functions have been called correctly
+  if [[ "$test_name" != "" ]]; then
+    die "${RED}ERR: \`it\` called, but a previous \`ti\` seems missing (probably from the test '$test_name')${NOFORMAT}".
+
+  else
+    test_name="it $@"
+
+  fi
+}
+
+ti() {
+  #
+  # This is the main test runner
+  #
+  # TODO
+
+  # Check if the it/ti functions have been called correctly
+  if [[ -z ${test_name+x} ]] || [[ "$test_name" == "" ]]; then
+    die "${RED}ERR: \`ti\` called without a matching \`it\`${NOFORMAT}"
+
+  else
+    echo "- $test_name"
+
+    # reset test state
+    test_name=""
+
+  fi
+}
+
+#
+# TEST COLLECTION
 #
 source_all_in_folder() {
   #
@@ -68,6 +111,8 @@ collect_and_run_tests() {
   fi
 }
 
-
+#
+# MAIN
+#
 setup_colors
 collect_and_run_tests "$@"
