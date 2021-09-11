@@ -1,0 +1,3 @@
+it "has a name"
+assert() { true; }
+ti

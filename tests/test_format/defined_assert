@@ -1,0 +1,5 @@
+assert() { false; }
+
+it "should work"
+assert() { true; }
+ti
