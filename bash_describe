@@ -60,7 +60,7 @@ it() {
     die "${RED}ERR: \`it\` called, but a previous \`ti\` seems missing (probably from the test '$test_name')${NOFORMAT}".
 
   elif is_assert_function_set; then
-    msg="${RED}ERR: \`it\` called, but a function called assert was already defined: assert functions"
+    msg="${RED}ERR: \`it\` called, but a function called assert was already defined: assert functions${NOFORMAT}"
     msg="$msg should only be defined inside it/ti blocks.${NOFORMAT}"
     die "$msg"
 
@@ -84,12 +84,50 @@ ti() {
     die "${RED}ERR: no assert function was found. Define one in the it/ti block of $test_name.${NOFORMAT}"
 
   else
-    echo "- $test_name"
+
+    assert
+
+    if [[ "$?" == "0" ]]; then
+      echo "- $test_name"
+    else
+      echo "x $test_name"
+    fi
 
     # reset test global state
     test_name=""
     unset assert
 
+  fi
+}
+
+
+#
+# FUNCTION RUNNING HELPERS
+#
+run(){
+  # TODO
+  local run_file="run_output"
+  ("$1" >"$run_file" 2>&1)
+  run_exit_code=$?
+  run_output=$(cat "$run_file")
+  rm "$run_file"
+}
+
+exit_code_is() {
+  # TODO
+  if [[ "$run_exit_code" == "$1" ]]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+output_contains() {
+  # TODO
+  if [[ "$run_output" == *"$1"* ]]; then
+    return 0
+  else
+    return 1
   fi
 }
 
