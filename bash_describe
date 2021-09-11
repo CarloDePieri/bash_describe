@@ -91,6 +91,7 @@ ti() {
       echo "- $test_name"
     else
       echo "x $test_name"
+      print_output
     fi
 
     # reset test global state
@@ -129,6 +130,11 @@ output_contains() {
   else
     return 1
   fi
+}
+
+print_output() {
+  # TODO
+  msg "-DEBUG-\n$run_output\n-------"
 }
 
 #
