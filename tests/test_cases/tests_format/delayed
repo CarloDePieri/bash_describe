@@ -1,0 +1,6 @@
+it "should work"
+assert() { true; }
+ti
+
+assert() { true; }
+ti
