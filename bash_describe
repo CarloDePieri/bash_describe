@@ -27,12 +27,29 @@ die() {
   exit "$code"
 }
 
+copy_function() {
+    declare -F $1 > /dev/null || return 1
+    eval "$(echo "${2}()"; declare -f ${1} | tail -n +2)"
+}
+
+get_hash() {
+  hash=$(echo "$@" | md5sum | cut -f1 -d " ")
+}
+
+copy_function_as_its_hash() {
+  # TODO
+  get_hash "$(declare -f "$1")"
+  copy_function "$1" "$hash"
+}
+
 #
 # GLOBAL STATE
 #
 
 # This will contain the next test name
 test_name=""
+declare -g -a tests_names
+declare -g -a tests_hashes
 
 #
 # TEST DEFINITIONS
@@ -85,14 +102,10 @@ ti() {
 
   else
 
-    assert
-
-    if [[ "$?" == "0" ]]; then
-      echo "- $test_name"
-    else
-      echo "x $test_name"
-      print_output
-    fi
+    # register the test
+    copy_function_as_its_hash assert
+    tests_hashes+=("$hash")
+    tests_names+=("$test_name")
 
     # reset test global state
     test_name=""
@@ -138,7 +151,7 @@ print_output() {
 }
 
 #
-# TEST COLLECTION
+# TEST COLLECTION AND EXECUTION
 #
 source_all_in_folder() {
   #
@@ -154,7 +167,7 @@ source_all_in_folder() {
   fi
 }
 
-collect_and_run_tests() {
+collect_tests() {
   #
   # source all test_*.sh files found in the given path/s (pwd by default)
   # can even source single file if provided (they don't have to respect the test_*.sh name format)
@@ -178,8 +191,31 @@ collect_and_run_tests() {
   fi
 }
 
+run_tests() {
+  #
+  # TODO
+  #
+  for test_id in "${!tests_hashes[@]}"; do
+
+    test_name="${tests_names[$test_id]}"
+    test_hash="${tests_hashes[$test_id]}"
+
+    eval "$test_hash"
+
+    if [[ "$?" == "0" ]]; then
+      echo "- $test_name"
+    else
+      echo "x $test_name"
+      print_output
+    fi
+
+  done
+}
+
 #
 # MAIN
 #
 setup_colors
-collect_and_run_tests "$@"
+collect_tests "$@"
+
+run_tests

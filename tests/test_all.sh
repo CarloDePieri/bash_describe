@@ -121,6 +121,14 @@ it "should have a default name"
   }
 ti
 
+it "should die before any test is executed if a format error is found"
+  assert() {
+    bd $format/delayed
+    exit_code_is 1 && \
+      output_contains "ERR: \`ti\` called without a matching \`it\`" && \
+      ! output_contains "it should work"
+  }
+ti
 
 # run and assertions
 # TODO
