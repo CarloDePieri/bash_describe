@@ -42,14 +42,38 @@ copy_function_as_its_hash() {
   copy_function "$1" "$hash"
 }
 
+is_assert_function_set() {
+  #
+  # return 0 if the assert function exists
+
+  declare -F "assert" > /dev/null
+  return $?
+}
+
+get_current_group_id() {
+  # TODO
+  # WARN: only available when defining tests
+  if [[ ${#current_group_path[@]} -gt 0 ]]; then
+    last_id=$((${#current_group_path[@]} - 1))
+    echo "${current_group_path[$last_id]}"
+  else
+    echo "-1"
+  fi
+}
+
 #
 # GLOBAL STATE
 #
 
 # This will contain the next test name
 test_name=""
+
 declare -g -a tests_names
 declare -g -a tests_hashes
+declare -g -a tests_group
+
+declare -g -a groups_names
+declare -g -a current_group_path
 
 #
 # TEST DEFINITIONS
@@ -60,13 +84,6 @@ declare -g -a tests_hashes
 #   assert() { true; }
 # it
 #
-is_assert_function_set() {
-  #
-  # return 0 if the assert function exists
-
-  declare -F "assert" > /dev/null
-  return $?
-}
 
 it() {
   #
@@ -106,6 +123,7 @@ ti() {
     copy_function_as_its_hash assert
     tests_hashes+=("$hash")
     tests_names+=("$test_name")
+    tests_group+=("$(get_current_group_id)")
 
     # reset test global state
     test_name=""
@@ -114,6 +132,20 @@ ti() {
   fi
 }
 
+
+#
+# GROUPS DEFINITIONS
+#
+
+describe() {
+  groups_names+=("${1-"A group"}")
+  group_id=$((${#groups_names[@]} - 1))
+  current_group_path+=("$group_id")
+}
+
+described() {
+  unset 'current_group_path[${#current_group_path[@]}-1]'
+}
 
 #
 # FUNCTION RUNNING HELPERS
@@ -189,6 +221,9 @@ collect_tests() {
     done
 
   fi
+
+  # Unset functions that will not work when running tests
+  unset -f get_current_group_id
 }
 
 run_tests() {

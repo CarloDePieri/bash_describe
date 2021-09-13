@@ -1,0 +1,15 @@
+it "should have no group"
+  assert() { 
+    [[ "${tests_group[0]}" == "-1" ]]
+  }
+ti
+
+describe
+  
+  it "has id"
+    assert() {
+      [[ "${tests_group[1]}" == "0" ]]
+    }
+  ti
+
+described

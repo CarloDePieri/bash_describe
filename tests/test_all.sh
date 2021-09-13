@@ -2,6 +2,7 @@
 test_cases="test_cases"
 collection="$test_cases/tests_collection"
 format="$test_cases/tests_format"
+groups="$test_cases/tests_groups"
 
 # helpers
 bd() {
@@ -132,3 +133,33 @@ ti
 
 # run and assertions
 # TODO
+
+
+# groups
+# TODO
+
+it "should nest groups correctly"
+  assert() {
+    bd $groups/nesting
+    exit_code_is 0 && \
+      output_contains "-0-" && \
+      output_contains "-0 1-" && \
+      output_contains "-0 2-" && \
+      output_contains "-0 2 3-" && \
+      output_contains "-0 4-"
+  }
+ti
+
+it "should save the test group id"
+  assert() {
+    bd $groups/test_group
+    exit_code_is 0 && output_contains "- it has id" && output_contains "- it should have no group"
+  }
+ti
+
+it "should save a group name"
+  assert() {
+    bd $groups/group_name
+    exit_code_is 0 && output_contains "- it should work"
+  }
+ti

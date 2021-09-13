@@ -1,0 +1,25 @@
+it "should nest correctly"
+assert() { true; }
+ti
+
+describe "A group"
+  echo "-${current_group_path[@]}-"
+
+  describe "A sub-group"
+    echo "-${current_group_path[@]}-"
+  described
+
+  describe
+    echo "-${current_group_path[@]}-"
+
+    describe "A sub-sub-group"
+      echo "-${current_group_path[@]}-"
+    described
+
+  described
+
+  describe "Another sub-group"
+    echo "-${current_group_path[@]}-"
+  described
+
+described

@@ -1,0 +1,7 @@
+describe "My group"
+  it
+    assert() {
+      [[ "${groups_names[0]}" == "My group" ]]
+    }
+  ti
+described
