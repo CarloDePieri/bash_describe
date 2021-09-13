@@ -61,6 +61,26 @@ get_current_group_id() {
   fi
 }
 
+get_test_id() {
+  # TODO
+  # WARN: only available when defining tests
+  if [[ ${#tests_names[@]} -gt 0 ]]; then
+    last_id=$((${#tests_names[@]} - 1))
+    echo "$last_id"
+  fi
+}
+
+get_current_group_padding() {
+  if [[ ${#current_group_path[@]} -gt 0 ]]; then
+    group_depth="${#current_group_path[@]}"
+    for ((i=1;i<=group_depth;i++)); do
+        echo -n "  "
+    done
+  else
+    echo ""
+  fi
+}
+
 #
 # GLOBAL STATE
 #
@@ -71,8 +91,10 @@ test_name=""
 declare -g -a tests_names
 declare -g -a tests_hashes
 declare -g -a tests_group
+declare -g -a tests_padding
 
 declare -g -a groups_names
+declare -g -a group_first_test
 declare -g -a current_group_path
 
 #
@@ -123,7 +145,13 @@ ti() {
     copy_function_as_its_hash assert
     tests_hashes+=("$hash")
     tests_names+=("$test_name")
-    tests_group+=("$(get_current_group_id)")
+    group_id=$(get_current_group_id)
+    tests_group+=("$group_id")
+    tests_padding+=("$(get_current_group_padding)")
+    if [[ "$group_id" != "-1" ]] && [[ ${#groups_names[@]} -gt ${#group_first_test[@]} ]]; then
+      # this is the first test of the current group, register it as such
+      group_first_test+=("$(get_test_id)")
+    fi
 
     # reset test global state
     test_name=""
@@ -175,6 +203,13 @@ output_contains() {
   else
     return 1
   fi
+}
+
+an_output_line_is() {
+  while IFS= read -r line; do
+      if [[ "$1" == "$line" ]]; then return 0; fi
+  done <<< "$run_output"
+  return 1
 }
 
 print_output() {
@@ -234,13 +269,20 @@ run_tests() {
 
     test_name="${tests_names[$test_id]}"
     test_hash="${tests_hashes[$test_id]}"
+    test_group="${tests_group[$test_id]}"
+    padding="${tests_padding[$test_id]}"
+
+    # print the group heading if necessary
+    if [[ "$test_group" != "-1" ]] && [[ "${group_first_test[$test_group]}" == "$test_id" ]]; then
+      msg "\n${padding:2:${#padding}}${groups_names[$test_group]}:" 
+    fi
 
     eval "$test_hash"
 
     if [[ "$?" == "0" ]]; then
-      echo "- $test_name"
+      msg "${padding}- $test_name"
     else
-      echo "x $test_name"
+      msg "${padding}x $test_name"
       print_output
     fi
 

@@ -163,3 +163,23 @@ it "should save a group name"
     exit_code_is 0 && output_contains "- it should work"
   }
 ti
+
+it "should print the correct test padding"
+  assert() {
+    bd $groups/padding
+    exit_code_is 0 && \
+      an_output_line_is "  - it first group test" && \
+      an_output_line_is "    - it second group test" && \
+      an_output_line_is "      - it third group test"
+  }
+ti
+
+it "should print the correct group name and padding"
+  assert() {
+    bd $groups/padding
+    exit_code_is 0 && \
+      an_output_line_is "group a:" && \
+      an_output_line_is "  group b:" && \
+      an_output_line_is "    group c:"
+  }
+ti

@@ -1,0 +1,35 @@
+describe "group a"
+
+  it "first group test"
+    assert() { true; }
+  ti
+
+  it
+    assert() { true; }
+  ti
+
+  describe "group b"
+
+    it "second group test"
+      assert() { true; }
+    ti
+
+    it
+      assert() { true; }
+    ti
+
+    describe "group c"
+
+      it "third group test"
+        assert() { true; }
+      ti
+
+      it
+        assert() { true; }
+      ti
+
+    described
+
+  described
+
+described
